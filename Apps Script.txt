@@ -17,10 +17,18 @@ function doPost (e) {
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
     const nextRow = sheet.getLastRow() + 1
 
-    const newRow = headers.map(function (header) {
+    const newRow = headers.map(function (rawHeader) {
+      const header = String(rawHeader).trim()
+      const normalizedHeader = header.toLowerCase()
+      const params = e.parameter || {}
+
       if (header === 'Date') return new Date()
-      if (header === 'fecha') return e.parameter.fecha || new Date()
-      return e.parameter[header] || ''
+      if (normalizedHeader === 'fecha') return params.fecha || new Date()
+      if (normalizedHeader === 'usuario') {
+        return params.usuario || params['usuario nombre'] || params['usuario email'] || ''
+      }
+
+      return params[header] || params[rawHeader] || ''
     })
 
     sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow])
