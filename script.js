@@ -216,6 +216,7 @@ function buildSheetPayload() {
   payload.append("Concepto", conceptoFinal);
   payload.append("entrada", isEntrada ? monto.value : "");
   payload.append("salida", isEntrada ? "" : monto.value);
+  payload.append("usuario", currentUser?.name || "");
   payload.append("usuario email", currentUser?.email || "");
   payload.append("usuario nombre", currentUser?.name || "");
   payload.append("google id token", currentUser?.token || "");
