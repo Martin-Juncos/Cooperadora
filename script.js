@@ -1,6 +1,16 @@
+const GOOGLE_CLIENT_ID =
+  "479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com";
+const SESSION_KEY = "cooperadora.googleUser";
 const scriptUrl =
   "https://script.google.com/macros/s/AKfycbw7074u4ndayDA1X_uPIBMAneuBTXsnDJI_LCORP_jpb48LcWSCjgzgcjD_5hrWWXOS/exec";
 
+const loginView = document.getElementById("loginView");
+const appView = document.getElementById("appView");
+const loginHelp = document.getElementById("loginHelp");
+const userPicture = document.getElementById("userPicture");
+const userName = document.getElementById("userName");
+const userEmail = document.getElementById("userEmail");
+const logoutButton = document.getElementById("logoutButton");
 const form = document.forms["cooperadora-form"];
 const tabs = document.querySelectorAll(".tab");
 const movementType = document.getElementById("movementType");
@@ -12,6 +22,131 @@ const razonSocial = document.getElementById("razonSocial");
 const conceptoSalida = document.getElementById("conceptoSalida");
 const monto = document.getElementById("monto");
 const submitButton = form.querySelector(".submit");
+
+let currentUser = getStoredUser();
+let googleButtonRendered = false;
+
+function isGoogleClientConfigured() {
+  return GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("PEGAR_CLIENT_ID");
+}
+
+function decodeJwt(token) {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split("")
+      .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+      .join(""),
+  );
+
+  return JSON.parse(jsonPayload);
+}
+
+function getStoredUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+  } catch (error) {
+    sessionStorage.removeItem(SESSION_KEY);
+    return null;
+  }
+}
+
+function storeUser(user) {
+  currentUser = user;
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+}
+
+function clearUser() {
+  currentUser = null;
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+function showLogin() {
+  loginView.classList.remove("hidden");
+  appView.classList.add("hidden");
+}
+
+function showApp(user) {
+  userPicture.src = user.picture || "";
+  userPicture.alt = user.name
+    ? `Foto de perfil de ${user.name}`
+    : "Foto de perfil";
+  userName.textContent = user.name || "Usuario";
+  userEmail.textContent = user.email || "";
+  loginView.classList.add("hidden");
+  appView.classList.remove("hidden");
+}
+
+function handleCredentialResponse(response) {
+  const profile = decodeJwt(response.credential);
+  const user = {
+    name: profile.name,
+    email: profile.email,
+    picture: profile.picture,
+    token: response.credential,
+  };
+
+  storeUser(user);
+  showApp(user);
+}
+
+function initGoogleSignIn() {
+  if (!isGoogleClientConfigured()) {
+    if (currentUser) {
+      showApp(currentUser);
+      return;
+    }
+    showLogin();
+    loginHelp.classList.remove("hidden");
+    return;
+  }
+
+  if (!window.google?.accounts?.id) {
+    if (currentUser) {
+      showApp(currentUser);
+      return;
+    }
+    showLogin();
+    loginHelp.textContent =
+      "No se pudo cargar Google Identity Services. Revisá la conexión e intentá nuevamente.";
+    loginHelp.classList.remove("hidden");
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+  });
+
+  if (!googleButtonRendered) {
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInButton"),
+      {
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "pill",
+        width: 280,
+      },
+    );
+    googleButtonRendered = true;
+  }
+
+  if (currentUser) {
+    showApp(currentUser);
+  } else {
+    showLogin();
+  }
+}
+
+function logout() {
+  clearUser();
+  if (window.google?.accounts?.id) {
+    google.accounts.id.disableAutoSelect();
+  }
+  showLogin();
+}
 
 function setRequired(fields, required) {
   fields.forEach((field) => {
@@ -81,6 +216,9 @@ function buildSheetPayload() {
   payload.append("Concepto", conceptoFinal);
   payload.append("entrada", isEntrada ? monto.value : "");
   payload.append("salida", isEntrada ? "" : monto.value);
+  payload.append("usuario email", currentUser?.email || "");
+  payload.append("usuario nombre", currentUser?.name || "");
+  payload.append("google id token", currentUser?.token || "");
 
   return payload;
 }
@@ -90,9 +228,16 @@ tabs.forEach((tab) => {
 });
 
 concepto.addEventListener("change", updateOtherConcept);
+logoutButton.addEventListener("click", logout);
+window.addEventListener("load", initGoogleSignIn);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!currentUser) {
+    showLogin();
+    return;
+  }
 
   submitButton.disabled = true;
   submitButton.textContent = "Enviando...";

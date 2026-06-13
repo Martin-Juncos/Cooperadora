@@ -4,88 +4,111 @@
     <meta charset="utf-8">
     <title>Cooperadora del ISFD &quot;D. Lesteime&quot;</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer-when-downgrade">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 <main class="app-shell">
-    <header class="app-header">
+    <section id="loginView" class="login-view card" aria-label="Ingreso con Google">
         <p class="eyebrow">Registro de movimientos</p>
         <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
-    </header>
+        <p class="login-copy">Ingresá con tu cuenta de Gmail para cargar entradas y salidas.</p>
+        <div id="googleSignInButton" class="google-button"></div>
+        <p id="loginHelp" class="login-help hidden">Configurá el Client ID de Google en <strong>script.js</strong> para habilitar el ingreso.</p>
+    </section>
 
-    <section class="card" aria-label="Formulario de movimientos de cooperadora">
-        <nav class="tabs" aria-label="Tipo de movimiento">
-            <button class="tab active" type="button" data-tab="entrada" aria-selected="true">Entrada</button>
-            <button class="tab" type="button" data-tab="salida" aria-selected="false">Salida</button>
-        </nav>
-
-        <form name="cooperadora-form" method="post" class="movement-form">
-            <input type="hidden" name="Movimiento" id="movementType" value="Entrada">
-
-            <div class="form-heading entrada-copy">
-                <span class="status-pill income">Ingreso de dinero</span>
-                <h2>Registrar entrada</h2>
-                <p>Cargá el concepto y el monto recibido.</p>
+    <section id="appView" class="app-view hidden" aria-label="Aplicación de movimientos de cooperadora">
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Registro de movimientos</p>
+                <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
             </div>
 
-            <div class="form-heading salida-copy hidden">
-                <span class="status-pill expense">Egreso de dinero</span>
-                <h2>Registrar salida</h2>
-                <p>Cargá el comprobante, comercio y monto pagado.</p>
-            </div>
-
-            <div class="field entrada-field">
-                <label for="concepto">Concepto</label>
-                <select id="concepto" required>
-                    <option value="" selected disabled>Seleccioná un concepto</option>
-                    <option value="Inscripciones">Inscripciones</option>
-                    <option value="Cooperadora libreta">Cooperadora libreta</option>
-                    <option value="Título">Título</option>
-                    <option value="Kiosco">Kiosco</option>
-                    <option value="Constancia de trabajo">Constancia de trabajo</option>
-                    <option value="Certificación de servicios">Certificación de servicios</option>
-                    <option value="Otros">Otros</option>
-                </select>
-            </div>
-
-            <div class="field entrada-field hidden" id="otroConceptoField">
-                <label for="otroConcepto">Otro concepto</label>
-                <input id="otroConcepto" type="text" placeholder="Escribí el concepto">
-            </div>
-
-            <div class="field salida-field hidden">
-                <label for="comprobante">Comprobante</label>
-                <select id="comprobante">
-                    <option value="" selected disabled>Seleccioná un comprobante</option>
-                    <option value="Factura">Factura</option>
-                    <option value="Recibo">Recibo</option>
-                    <option value="Remito">Remito</option>
-                </select>
-            </div>
-
-            <div class="field salida-field hidden">
-                <label for="razonSocial">Razón social</label>
-                <input id="razonSocial" type="text" placeholder="Nombre del comercio">
-            </div>
-
-            <div class="field salida-field hidden">
-                <label for="conceptoSalida">Concepto</label>
-                <input id="conceptoSalida" type="text" placeholder="Detalle del gasto">
-            </div>
-
-            <div class="field">
-                <label for="monto">Monto</label>
-                <div class="money-input">
-                    <span>$</span>
-                    <input id="monto" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" required>
+            <div class="user-card" aria-label="Usuario autenticado">
+                <img id="userPicture" class="user-picture" src="" alt="Foto de perfil">
+                <div class="user-data">
+                    <strong id="userName">Usuario</strong>
+                    <span id="userEmail"></span>
                 </div>
+                <button id="logoutButton" class="logout-button" type="button">Salir</button>
             </div>
+        </header>
 
-            <button type="submit" class="submit income-submit">Registrar entrada</button>
-        </form>
+        <section class="card" aria-label="Formulario de movimientos de cooperadora">
+            <nav class="tabs" aria-label="Tipo de movimiento">
+                <button class="tab active" type="button" data-tab="entrada" aria-selected="true">Entrada</button>
+                <button class="tab" type="button" data-tab="salida" aria-selected="false">Salida</button>
+            </nav>
+
+            <form name="cooperadora-form" method="post" class="movement-form">
+                <input type="hidden" name="Movimiento" id="movementType" value="Entrada">
+
+                <div class="form-heading entrada-copy">
+                    <span class="status-pill income">Ingreso de dinero</span>
+                    <h2>Registrar entrada</h2>
+                    <p>Cargá el concepto y el monto recibido.</p>
+                </div>
+
+                <div class="form-heading salida-copy hidden">
+                    <span class="status-pill expense">Egreso de dinero</span>
+                    <h2>Registrar salida</h2>
+                    <p>Cargá el comprobante, comercio y monto pagado.</p>
+                </div>
+
+                <div class="field entrada-field">
+                    <label for="concepto">Concepto</label>
+                    <select id="concepto" required>
+                        <option value="" selected disabled>Seleccioná un concepto</option>
+                        <option value="Inscripciones">Inscripciones</option>
+                        <option value="Cooperadora libreta">Cooperadora libreta</option>
+                        <option value="Título">Título</option>
+                        <option value="Kiosco">Kiosco</option>
+                        <option value="Constancia de trabajo">Constancia de trabajo</option>
+                        <option value="Certificación de servicios">Certificación de servicios</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <div class="field entrada-field hidden" id="otroConceptoField">
+                    <label for="otroConcepto">Otro concepto</label>
+                    <input id="otroConcepto" type="text" placeholder="Escribí el concepto">
+                </div>
+
+                <div class="field salida-field hidden">
+                    <label for="comprobante">Comprobante</label>
+                    <select id="comprobante">
+                        <option value="" selected disabled>Seleccioná un comprobante</option>
+                        <option value="Factura">Factura</option>
+                        <option value="Recibo">Recibo</option>
+                        <option value="Remito">Remito</option>
+                    </select>
+                </div>
+
+                <div class="field salida-field hidden">
+                    <label for="razonSocial">Razón social</label>
+                    <input id="razonSocial" type="text" placeholder="Nombre del comercio">
+                </div>
+
+                <div class="field salida-field hidden">
+                    <label for="conceptoSalida">Concepto</label>
+                    <input id="conceptoSalida" type="text" placeholder="Detalle del gasto">
+                </div>
+
+                <div class="field">
+                    <label for="monto">Monto</label>
+                    <div class="money-input">
+                        <span>$</span>
+                        <input id="monto" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit income-submit">Registrar entrada</button>
+            </form>
+        </section>
     </section>
 </main>
 

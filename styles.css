@@ -32,10 +32,42 @@ body {
 }
 
 .app-shell {
-    width: min(100%, 440px);
+    width: min(100%, 520px);
+}
+
+.app-view,
+.login-view {
+    width: 100%;
+}
+
+.login-view {
+    text-align: center;
+}
+
+.login-copy {
+    margin: 14px auto 22px;
+    max-width: 34rem;
+    color: var(--muted);
+    font-size: 1.6rem;
+    line-height: 1.4;
+}
+
+.google-button {
+    display: flex;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.login-help {
+    margin-top: 14px;
+    color: var(--expense);
+    font-size: 1.4rem;
+    line-height: 1.4;
 }
 
 .app-header {
+    display: grid;
+    gap: 14px;
     margin-bottom: 18px;
     text-align: center;
 }
@@ -52,6 +84,60 @@ h1 {
     margin-top: 8px;
     font-size: clamp(2.6rem, 7vw, 3.6rem);
     line-height: 1.1;
+}
+
+.user-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.8);
+    text-align: left;
+}
+
+.user-picture {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #d8e0ea;
+}
+
+.user-data {
+    min-width: 0;
+}
+
+.user-data strong,
+.user-data span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-data strong {
+    font-size: 1.5rem;
+}
+
+.user-data span {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 1.3rem;
+}
+
+.logout-button {
+    min-height: 38px;
+    border: 0;
+    border-radius: 12px;
+    background: #e8eef6;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 800;
+    padding: 0 14px;
 }
 
 .card {
@@ -222,5 +308,14 @@ select:focus {
     .card {
         padding: 14px;
         border-radius: 20px;
+    }
+
+    .user-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .logout-button {
+        grid-column: 1 / -1;
+        width: 100%;
     }
 }
