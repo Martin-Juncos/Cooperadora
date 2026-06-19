@@ -21,6 +21,11 @@ La raíz del proyecto contiene la app principal y una carpeta local para skills 
 |-- index.html        # Marcado de la app, vistas de login y formulario de movimientos.
 |-- styles.css        # Estilos globales, variables CSS y responsive layout.
 |-- script.js         # Lógica del frontend: login Google, tabs, validación básica y envío.
+|-- manifest.webmanifest # Configuración PWA instalable.
+|-- sw.js             # Service worker para instalación y cache básico.
+|-- offline.html      # Pantalla offline de la PWA.
+|-- assets/brand/     # Logo institucional usado por la UI.
+|-- icons/            # Iconos PWA para escritorio, Android e iOS.
 |-- Apps Script.txt   # Código para pegar/publicar en Google Apps Script.
 |-- skills/           # Skills locales reutilizables para este proyecto.
 `-- AGENTS.md         # Contexto operativo para agentes.
@@ -71,6 +76,7 @@ La raíz del proyecto contiene la app principal y una carpeta local para skills 
   - Construcción del `FormData`.
   - Envío `POST` al Web App de Apps Script con `fetch` y `mode: "no-cors"`.
   - Feedback visual con SweetAlert2.
+  - Registro de `sw.js` como service worker cuando el navegador lo soporta.
 - Constantes importantes:
   - `GOOGLE_CLIENT_ID`: Client ID público de Google Identity Services.
   - `SESSION_KEY`: clave de sesión local.
@@ -86,6 +92,14 @@ La raíz del proyecto contiene la app principal y una carpeta local para skills 
   - `initialSetup()`: guarda el ID de la planilla activa en Script Properties.
   - `doPost(e)`: recibe parámetros del frontend y agrega una fila a la hoja.
 - Usa un lock (`LockService.getScriptLock()`) para reducir problemas de escritura concurrente.
+
+### PWA
+
+- `manifest.webmanifest` define nombre, colores, iconos, `display: "standalone"` y rutas relativas para funcionar en GitHub Pages y local.
+- `sw.js` cachea la app shell y muestra `offline.html` cuando una navegación falla sin conexión.
+- `assets/brand/logo_isfd.jpg` es el logo institucional principal usado en la UI y en `offline.html`.
+- `icons/` contiene PNGs para instalación en Windows/Android y `apple-touch-icon.png` para iOS.
+- La app instalada puede abrirse como PWA, pero registrar movimientos requiere conexión a internet, Google Identity Services y Apps Script.
 
 ### `skills/`
 
@@ -106,6 +120,7 @@ Stack verificado:
 - SweetAlert2.
 - Google Apps Script.
 - Google Sheets como almacenamiento.
+- PWA instalable mediante Web App Manifest y Service Worker.
 
 No hay:
 
@@ -336,6 +351,8 @@ Implicación de seguridad:
 - No introducir React, Vite, Tailwind, TypeScript o backend Node solo para cambios menores.
 - No convertir el proyecto a SPA con build step sin pedido explícito.
 - No agregar dependencias CDN nuevas si una solución simple con HTML/CSS/JS alcanza.
+- No romper rutas relativas de PWA en `manifest.webmanifest` ni `sw.js`; deben funcionar en GitHub Pages y servidor local.
+- Si se cambia el nombre, color o icono de la app, actualizar `manifest.webmanifest`, `icons/`, metadatos de `index.html` y README.
 - No romper los IDs usados por JavaScript:
   - `loginView`
   - `appView`

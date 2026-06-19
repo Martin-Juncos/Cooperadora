@@ -191,6 +191,14 @@ function logout() {
   showLogin();
 }
 
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  navigator.serviceWorker.register("sw.js").catch((error) => {
+    console.warn("No se pudo registrar el service worker", error);
+  });
+}
+
 function setRequired(fields, required) {
   fields.forEach((field) => {
     field.required = required;
@@ -332,6 +340,7 @@ tabs.forEach((tab) => {
 concepto.addEventListener("change", updateOtherConcept);
 logoutButton.addEventListener("click", logout);
 window.addEventListener("load", initGoogleSignIn);
+window.addEventListener("load", registerServiceWorker);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();

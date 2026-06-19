@@ -21,6 +21,11 @@ https://martin-juncos.github.io/Cooperadora/
 |-- index.html        # Interfaz principal: login, usuario y formulario.
 |-- styles.css        # Estilos responsive y sistema visual.
 |-- script.js         # Login, autorizacion, tabs, payload y envio.
+|-- manifest.webmanifest # Configuracion PWA instalable.
+|-- sw.js             # Service worker para instalacion y cache basico.
+|-- offline.html      # Pantalla cuando no hay conexion.
+|-- assets/brand/     # Logo institucional usado en la aplicacion.
+|-- icons/            # Iconos para Windows, Android e iOS.
 |-- Apps Script.txt   # Codigo para Google Apps Script.
 |-- AGENTS.md         # Contexto operativo para agentes.
 `-- skills/           # Skills locales del proyecto.
@@ -33,6 +38,39 @@ https://martin-juncos.github.io/Cooperadora/
 3. Elegir `Entrada` o `Salida`.
 4. Completar los campos requeridos.
 5. Registrar el movimiento.
+
+## Instalar en Windows, Android e iOS
+
+La app esta preparada como PWA. Eso permite instalarla desde navegadores compatibles sin pasar por una tienda de aplicaciones.
+
+### Windows
+
+En Microsoft Edge o Google Chrome:
+
+1. Abrir https://martin-juncos.github.io/Cooperadora/
+2. Buscar el icono de instalar en la barra de direcciones.
+3. Elegir `Instalar`.
+4. La app quedara disponible desde el menu Inicio.
+
+### Android
+
+En Google Chrome:
+
+1. Abrir https://martin-juncos.github.io/Cooperadora/
+2. Tocar el menu de tres puntos.
+3. Elegir `Instalar app` o `Agregar a pantalla principal`.
+4. Abrirla desde el icono de la pantalla principal.
+
+### iPhone o iPad
+
+En Safari:
+
+1. Abrir https://martin-juncos.github.io/Cooperadora/
+2. Tocar el boton de compartir.
+3. Elegir `Agregar a pantalla de inicio`.
+4. Confirmar el nombre `Cooperadora`.
+
+En iOS, la instalacion funciona desde Safari. Otros navegadores pueden no mostrar la opcion del mismo modo.
 
 ## Reglas de Movimientos
 
@@ -146,6 +184,9 @@ Get-Content -Raw "Apps Script.txt" | node --check --input-type=commonjs
 - No cambiar nombres de campos enviados al `FormData` sin revisar encabezados de Google Sheets.
 - No subir secretos ni credenciales al repositorio.
 - `GOOGLE_CLIENT_ID` no es secreto, pero debe coincidir con la configuracion OAuth correcta.
+- La PWA puede abrir instalada en Windows, Android e iOS, pero registrar movimientos requiere conexion a internet.
+- Si cambian iconos, nombre o colores de marca, actualizar `manifest.webmanifest`, `icons/` y los metadatos de `index.html`.
+- El logo institucional principal vive en `assets/brand/logo_isfd.jpg` y se usa en la app y en la pantalla offline.
 
 ## Verificacion Recomendada
 
@@ -155,5 +196,7 @@ Get-Content -Raw "Apps Script.txt" | node --check --input-type=commonjs
 - Registrar una salida con fecha distinta a la actual.
 - Confirmar que la hoja `2026` recibe `fecha`, `razon social`, `concepto`, `entrada`, `salida` y datos de usuario.
 - Revisar el formulario en celular.
+- Probar instalacion PWA en Chrome o Edge.
+- En iOS, probar `Agregar a pantalla de inicio` desde Safari.
 
 Hecho por el Profe Mercho con mucho ☕ y ♥️

@@ -7,17 +7,18 @@
 :root {
     --bg: #f4f7f5;
     --surface: #ffffff;
-    --surface-soft: #eef4f0;
+    --surface-soft: #eef3fb;
     --text: #111827;
     --muted: #536170;
     --line: #d5ded8;
-    --primary: #245b45;
-    --primary-strong: #173f31;
+    --primary: #16448f;
+    --primary-strong: #0b2e6f;
+    --gold: #b88a22;
     --income: #147a4a;
     --expense: #a34a15;
     --warning-soft: #fff3e7;
     --success-soft: #e8f7ee;
-    --focus: rgba(36, 91, 69, 0.22);
+    --focus: rgba(22, 68, 143, 0.22);
     --shadow: 0 8px 14px rgba(17, 24, 39, 0.08);
 }
 
@@ -32,7 +33,7 @@ body {
     align-items: center;
     padding: 28px;
     background:
-        linear-gradient(180deg, #edf4ef 0%, var(--bg) 48%, #eef3f7 100%);
+        linear-gradient(180deg, #eef3fb 0%, var(--bg) 48%, #f7f1e5 100%);
     color: var(--text);
     font-family: "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
 }
@@ -74,19 +75,15 @@ button {
     align-items: flex-start;
 }
 
-.brand-mark {
-    display: inline-grid;
-    place-items: center;
+.brand-logo {
+    display: block;
     flex: 0 0 auto;
-    width: 44px;
-    height: 44px;
+    width: clamp(74px, 13vw, 116px);
+    height: auto;
+    max-height: 58px;
+    object-fit: contain;
     border-radius: 8px;
-    background: var(--primary-strong);
-    color: #fff;
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: 0;
-    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.12);
+    filter: drop-shadow(0 2px 3px rgba(17, 24, 39, 0.12));
 }
 
 .login-copy {
@@ -192,8 +189,8 @@ h1 {
 }
 
 .logout-button:hover {
-    background: #e3eee8;
-    border-color: #c8d8ce;
+    background: #e9eef8;
+    border-color: #c7d2e6;
 }
 
 .logout-button:active,
@@ -220,7 +217,7 @@ h1 {
     position: absolute;
     inset: 0 0 auto;
     height: 4px;
-    background: var(--primary);
+    background: linear-gradient(90deg, var(--primary-strong), var(--primary), var(--gold));
 }
 
 .tabs {
@@ -248,7 +245,7 @@ h1 {
 .tab.active {
     background: var(--primary-strong);
     color: #fff;
-    box-shadow: 0 4px 8px rgba(23, 63, 49, 0.18);
+    box-shadow: 0 4px 8px rgba(11, 46, 111, 0.18);
 }
 
 .movement-form {
@@ -276,7 +273,7 @@ h1 {
 .form-context {
     min-height: 2.2rem;
     margin-bottom: 4px;
-    color: #415448;
+    color: #344071;
 }
 
 .status-pill {
@@ -332,7 +329,7 @@ input::placeholder {
 input:hover,
 select:hover,
 .money-input:hover {
-    border-color: #b7c7bd;
+    border-color: #b8c7df;
 }
 
 input:focus,
@@ -468,9 +465,9 @@ select:focus-visible {
         padding: 14px;
     }
 
-    .brand-mark {
-        width: 40px;
-        height: 40px;
+    .brand-logo {
+        width: 78px;
+        max-height: 48px;
     }
 
     .card {

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ISFD Dr. Daniel Lesteime">
+  <rect width="512" height="512" rx="72" fill="#0b2e6f"/>
+  <rect x="58" y="58" width="396" height="396" rx="48" fill="#16448f"/>
+  <text x="256" y="276" text-anchor="middle" dominant-baseline="middle" fill="#f4f7f5" font-family="Segoe UI, Arial, sans-serif" font-size="122" font-weight="800">ISFD</text>
+  <path d="M126 382h260" stroke="#d6a23a" stroke-width="20" stroke-linecap="round" opacity=".95"/>
+</svg>
