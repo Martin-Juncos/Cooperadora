@@ -1,4 +1,9 @@
 const sheetName = '2026'
+const googleClientId = '479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com'
+const allowedEmails = [
+  // Agregar aca los correos autorizados, siempre en minusculas.
+  // 'persona.autorizada@gmail.com',
+]
 const scriptProp = PropertiesService.getScriptProperties()
 
 function initialSetup () {
@@ -6,11 +11,57 @@ function initialSetup () {
   scriptProp.setProperty('key', activeSpreadsheet.getId())
 }
 
+function normalizeEmail (email) {
+  return String(email || '').trim().toLowerCase()
+}
+
+function isAllowedEmail (email) {
+  return allowedEmails.indexOf(normalizeEmail(email)) !== -1
+}
+
+function jsonResponse (payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON)
+}
+
+function verifyGoogleToken (idToken) {
+  if (!idToken) return null
+
+  try {
+    const response = UrlFetchApp.fetch(
+      'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken),
+      { muteHttpExceptions: true }
+    )
+
+    if (response.getResponseCode() !== 200) return null
+
+    const payload = JSON.parse(response.getContentText())
+    const email = normalizeEmail(payload.email)
+    const emailVerified = String(payload.email_verified) === 'true' || payload.email_verified === true
+
+    if (payload.aud !== googleClientId) return null
+    if (!emailVerified) return null
+    if (!isAllowedEmail(email)) return null
+
+    return email
+  } catch (error) {
+    return null
+  }
+}
+
 function doPost (e) {
   const lock = LockService.getScriptLock()
   lock.tryLock(10000)
 
   try {
+    const params = e.parameter || {}
+    const verifiedEmail = verifyGoogleToken(params['google id token'])
+
+    if (!verifiedEmail) {
+      return jsonResponse({ result: 'error', error: 'unauthorized' })
+    }
+
     const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'))
     const sheet = doc.getSheetByName(sheetName)
 
@@ -20,26 +71,22 @@ function doPost (e) {
     const newRow = headers.map(function (rawHeader) {
       const header = String(rawHeader).trim()
       const normalizedHeader = header.toLowerCase()
-      const params = e.parameter || {}
 
       if (header === 'Date') return new Date()
       if (normalizedHeader === 'fecha') return params.fecha || new Date()
       if (normalizedHeader === 'usuario') {
         return params.usuario || params['usuario nombre'] || params['usuario email'] || ''
       }
+      if (normalizedHeader === 'usuario email') return verifiedEmail
 
       return params[header] || params[rawHeader] || ''
     })
 
     sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow])
 
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: 'success', row: nextRow }))
-      .setMimeType(ContentService.MimeType.JSON)
+    return jsonResponse({ result: 'success', row: nextRow })
   } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: 'error', error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON)
+    return jsonResponse({ result: 'error', error: error.toString() })
   } finally {
     lock.releaseLock()
   }

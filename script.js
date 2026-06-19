@@ -3,6 +3,10 @@ const GOOGLE_CLIENT_ID =
 const SESSION_KEY = "cooperadora.googleUser";
 const scriptUrl =
   "https://script.google.com/macros/s/AKfycbw7074u4ndayDA1X_uPIBMAneuBTXsnDJI_LCORP_jpb48LcWSCjgzgcjD_5hrWWXOS/exec";
+const ALLOWED_EMAILS = new Set([
+  "prof.mcjuncos@gmail.com",
+  "modo.beta.developer@gmail.com",
+]);
 
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
@@ -14,20 +18,39 @@ const logoutButton = document.getElementById("logoutButton");
 const form = document.forms["cooperadora-form"];
 const tabs = document.querySelectorAll(".tab");
 const movementType = document.getElementById("movementType");
+const formContext = document.getElementById("formContext");
 const concepto = document.getElementById("concepto");
 const otroConcepto = document.getElementById("otroConcepto");
 const otroConceptoField = document.getElementById("otroConceptoField");
 const comprobante = document.getElementById("comprobante");
+const fechaSalida = document.getElementById("fechaSalida");
 const razonSocial = document.getElementById("razonSocial");
 const conceptoSalida = document.getElementById("conceptoSalida");
 const monto = document.getElementById("monto");
 const submitButton = form.querySelector(".submit");
+
+const BIBLIOTECA_CONCEPTS = new Set([
+  "Inscripciones",
+  "Cooperadora libreta",
+  "Título",
+  "Kiosco",
+]);
 
 let currentUser = getStoredUser();
 let googleButtonRendered = false;
 
 function isGoogleClientConfigured() {
   return GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("PEGAR_CLIENT_ID");
+}
+
+function normalizeEmail(email) {
+  return String(email || "")
+    .trim()
+    .toLowerCase();
+}
+
+function isUserAllowed(email) {
+  return ALLOWED_EMAILS.has(normalizeEmail(email));
 }
 
 function decodeJwt(token) {
@@ -80,9 +103,24 @@ function showApp(user) {
 
 function handleCredentialResponse(response) {
   const profile = decodeJwt(response.credential);
+  const email = normalizeEmail(profile.email);
+
+  if (!isUserAllowed(email)) {
+    clearUser();
+    showLogin();
+
+    Swal.fire({
+      title: "Acceso no autorizado",
+      text: "Tu cuenta no está habilitada para cargar movimientos.",
+      icon: "error",
+    });
+
+    return;
+  }
+
   const user = {
     name: profile.name,
-    email: profile.email,
+    email,
     picture: profile.picture,
     token: response.credential,
   };
@@ -134,7 +172,12 @@ function initGoogleSignIn() {
   }
 
   if (currentUser) {
-    showApp(currentUser);
+    if (isUserAllowed(currentUser.email)) {
+      showApp(currentUser);
+    } else {
+      clearUser();
+      showLogin();
+    }
   } else {
     showLogin();
   }
@@ -160,6 +203,36 @@ function updateOtherConcept() {
   otroConceptoField.classList.toggle("hidden", !isOther);
   otroConcepto.required = isOther;
   if (!isOther) otroConcepto.value = "";
+  updateFormContext();
+}
+
+function getTodayForInput() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function updateFormContext() {
+  if (!formContext) return;
+
+  if (movementType.value === "Salida") {
+    formContext.textContent =
+      "La salida se registrará con la fecha seleccionada y el comercio indicado.";
+    return;
+  }
+
+  if (!concepto.value) {
+    formContext.textContent =
+      "Seleccioná un concepto para definir el destino contable.";
+    return;
+  }
+
+  formContext.textContent = `Esta entrada se imputará a ${getRazonSocialEntrada(
+    concepto.value,
+  )}.`;
 }
 
 function setActiveTab(tabName) {
@@ -186,18 +259,40 @@ function setActiveTab(tabName) {
   submitButton.classList.toggle("income-submit", isEntrada);
   submitButton.classList.toggle("expense-submit", !isEntrada);
 
+  if (!isEntrada && !fechaSalida.value) {
+    fechaSalida.value = getTodayForInput();
+  }
+
   setRequired([concepto], isEntrada);
-  setRequired([comprobante, razonSocial, conceptoSalida], !isEntrada);
+  setRequired(
+    [comprobante, fechaSalida, razonSocial, conceptoSalida],
+    !isEntrada,
+  );
   updateOtherConcept();
+  updateFormContext();
+}
+
+function formatDateForSheet(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+function formatInputDateForSheet(inputDate) {
+  if (!inputDate) return getTodayForSheet();
+
+  const [year, month, day] = inputDate.split("-");
+  return `${day}/${month}/${year}`;
 }
 
 function getTodayForSheet() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
+  return formatDateForSheet(new Date());
+}
 
-  return `${year}-${month}-${day}`;
+function getRazonSocialEntrada(conceptoEntrada) {
+  return BIBLIOTECA_CONCEPTS.has(conceptoEntrada) ? "Biblioteca" : "Secretaria";
 }
 
 function buildSheetPayload() {
@@ -208,12 +303,18 @@ function buildSheetPayload() {
       : isEntrada
         ? concepto.value
         : conceptoSalida.value;
+  const razonSocialFinal = isEntrada
+    ? getRazonSocialEntrada(concepto.value)
+    : razonSocial.value;
+  const fechaFinal = isEntrada
+    ? getTodayForSheet()
+    : formatInputDateForSheet(fechaSalida.value);
 
   const payload = new FormData();
-  payload.append("fecha", getTodayForSheet());
+  payload.append("fecha", fechaFinal);
   payload.append("comprobante", isEntrada ? "recibo" : comprobante.value);
-  payload.append("razon social", isEntrada ? "Instituto" : razonSocial.value);
-  payload.append("Concepto", conceptoFinal);
+  payload.append("razon social", razonSocialFinal);
+  payload.append("concepto", conceptoFinal);
   payload.append("entrada", isEntrada ? monto.value : "");
   payload.append("salida", isEntrada ? "" : monto.value);
   payload.append("usuario", currentUser?.name || "");
@@ -241,6 +342,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   submitButton.disabled = true;
+  submitButton.setAttribute("aria-busy", "true");
   submitButton.textContent = "Enviando...";
 
   try {
@@ -268,6 +370,7 @@ form.addEventListener("submit", async (e) => {
     });
   } finally {
     submitButton.disabled = false;
+    submitButton.removeAttribute("aria-busy");
     submitButton.textContent =
       movementType.value === "Entrada"
         ? "Registrar entrada"

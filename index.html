@@ -14,8 +14,13 @@
 <body>
 <main class="app-shell">
     <section id="loginView" class="login-view card" aria-label="Ingreso con Google">
-        <p class="eyebrow">Registro de movimientos</p>
-        <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
+        <div class="brand-lockup">
+            <span class="brand-mark" aria-hidden="true">CL</span>
+            <div>
+                <p class="eyebrow">Registro de movimientos</p>
+                <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
+            </div>
+        </div>
         <p class="login-copy">Ingresá con tu cuenta de Gmail para cargar entradas y salidas.</p>
         <div id="googleSignInButton" class="google-button"></div>
         <p id="loginHelp" class="login-help hidden">Configurá el Client ID de Google en <strong>script.js</strong> para habilitar el ingreso.</p>
@@ -23,9 +28,12 @@
 
     <section id="appView" class="app-view hidden" aria-label="Aplicación de movimientos de cooperadora">
         <header class="app-header">
-            <div>
-                <p class="eyebrow">Registro de movimientos</p>
-                <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
+            <div class="brand-lockup">
+                <span class="brand-mark" aria-hidden="true">CL</span>
+                <div>
+                    <p class="eyebrow">Registro de movimientos</p>
+                    <h1>Cooperadora del ISFD &quot;D. Lesteime&quot;</h1>
+                </div>
             </div>
 
             <div class="user-card" aria-label="Usuario autenticado">
@@ -38,26 +46,28 @@
             </div>
         </header>
 
-        <section class="card" aria-label="Formulario de movimientos de cooperadora">
-            <nav class="tabs" aria-label="Tipo de movimiento">
-                <button class="tab active" type="button" data-tab="entrada" aria-selected="true">Entrada</button>
-                <button class="tab" type="button" data-tab="salida" aria-selected="false">Salida</button>
+        <section class="card movement-card" aria-label="Formulario de movimientos de cooperadora">
+            <nav class="tabs" aria-label="Tipo de movimiento" role="tablist">
+                <button class="tab active" type="button" role="tab" data-tab="entrada" aria-selected="true">Entrada</button>
+                <button class="tab" type="button" role="tab" data-tab="salida" aria-selected="false">Salida</button>
             </nav>
 
             <form name="cooperadora-form" method="post" class="movement-form">
                 <input type="hidden" name="Movimiento" id="movementType" value="Entrada">
 
                 <div class="form-heading entrada-copy">
-                    <span class="status-pill income">Ingreso de dinero</span>
+                    <span class="status-pill income">Ingreso</span>
                     <h2>Registrar entrada</h2>
                     <p>Cargá el concepto y el monto recibido.</p>
                 </div>
 
                 <div class="form-heading salida-copy hidden">
-                    <span class="status-pill expense">Egreso de dinero</span>
+                    <span class="status-pill expense">Egreso</span>
                     <h2>Registrar salida</h2>
                     <p>Cargá el comprobante, comercio y monto pagado.</p>
                 </div>
+
+                <p id="formContext" class="form-context" aria-live="polite"></p>
 
                 <div class="field entrada-field">
                     <label for="concepto">Concepto</label>
@@ -88,6 +98,11 @@
                     </select>
                 </div>
 
+                <div class="field salida-field hidden compact-field">
+                    <label for="fechaSalida">Fecha</label>
+                    <input id="fechaSalida" type="date">
+                </div>
+
                 <div class="field salida-field hidden">
                     <label for="razonSocial">Razón social</label>
                     <input id="razonSocial" type="text" placeholder="Nombre del comercio">
@@ -98,7 +113,7 @@
                     <input id="conceptoSalida" type="text" placeholder="Detalle del gasto">
                 </div>
 
-                <div class="field">
+                <div class="field amount-field">
                     <label for="monto">Monto</label>
                     <div class="money-input">
                         <span>$</span>

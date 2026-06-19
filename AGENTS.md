@@ -14,7 +14,7 @@ Prioridad de contexto:
 
 ## Estructura del Proyecto
 
-La raíz del proyecto contiene todos los archivos relevantes. No hay estructura de carpetas, bundler, framework frontend ni backend Node.
+La raíz del proyecto contiene la app principal y una carpeta local para skills del proyecto. No hay bundler, framework frontend ni backend Node.
 
 ```text
 .
@@ -22,6 +22,7 @@ La raíz del proyecto contiene todos los archivos relevantes. No hay estructura 
 |-- styles.css        # Estilos globales, variables CSS y responsive layout.
 |-- script.js         # Lógica del frontend: login Google, tabs, validación básica y envío.
 |-- Apps Script.txt   # Código para pegar/publicar en Google Apps Script.
+|-- skills/           # Skills locales reutilizables para este proyecto.
 `-- AGENTS.md         # Contexto operativo para agentes.
 ```
 
@@ -41,17 +42,22 @@ La raíz del proyecto contiene todos los archivos relevantes. No hay estructura 
 - Contiene todo el sistema visual del proyecto.
 - Usa variables CSS en `:root` para colores base:
   - `--bg`
-  - `--card`
+  - `--surface`
+  - `--surface-soft`
   - `--text`
   - `--muted`
   - `--line`
   - `--primary`
+  - `--primary-strong`
   - `--income`
   - `--expense`
+  - `--warning-soft`
+  - `--success-soft`
   - `--focus`
+  - `--shadow`
 - Usa `html { font-size: 62.5%; }`, por lo que `1.6rem` equivale aproximadamente a `16px`.
-- El layout está centrado y optimizado para un ancho máximo de `520px`.
-- Hay un breakpoint principal en `@media (max-width: 420px)`.
+- El layout principal usa `width: min(100%, 880px)` y el login conserva un ancho máximo de `520px`.
+- Hay breakpoints principales en `760px` y `420px`.
 
 ### `script.js`
 
@@ -80,6 +86,14 @@ La raíz del proyecto contiene todos los archivos relevantes. No hay estructura 
   - `initialSetup()`: guarda el ID de la planilla activa en Script Properties.
   - `doPost(e)`: recibe parámetros del frontend y agrega una fila a la hoja.
 - Usa un lock (`LockService.getScriptLock()`) para reducir problemas de escritura concurrente.
+
+### `skills/`
+
+- Guarda skills locales del proyecto que futuras sesiones de Codex pueden leer y seguir.
+- Cada skill real debe estar en una subcarpeta con un `SKILL.md`.
+- La carpeta `skills/_template/` contiene una plantilla base para crear nuevas skills.
+- Antes de usar una skill local, leer su `SKILL.md` y cargar solo referencias necesarias.
+- No guardar secretos, credenciales ni tokens dentro de skills.
 
 ## Stack y Dependencias
 
@@ -209,7 +223,7 @@ Campos enviados actualmente:
 fecha
 comprobante
 razon social
-Concepto
+concepto
 entrada
 salida
 usuario
@@ -220,16 +234,20 @@ google id token
 
 Reglas actuales:
 
-- `fecha` se envía como `YYYY-MM-DD`.
+- `fecha` se envía como `dd/mm/aaaa`.
 - En entradas:
+  - `fecha` se envía con la fecha actual del navegador.
   - `comprobante` se envía como `recibo`.
-  - `razon social` se envía como `Instituto`.
+  - `razon social` se envía como `Biblioteca` para `Inscripciones`, `Cooperadora libreta`, `Título` y `Kiosco`.
+  - `razon social` se envía como `Secretaria` para `Constancia de trabajo`, `Certificación de servicios` y `Otros`.
+  - `concepto` recibe el concepto seleccionado; si el concepto es `Otros`, recibe el texto de `Otro concepto`.
   - `entrada` recibe el monto.
   - `salida` queda vacío.
 - En salidas:
+  - `fecha` sale del input de fecha de salida y puede ser distinta a la columna `Date` automática.
   - `comprobante` sale del select de comprobante.
   - `razon social` sale del campo de comercio.
-  - `Concepto` sale del detalle del gasto.
+  - `concepto` sale del detalle del gasto.
   - `salida` recibe el monto.
   - `entrada` queda vacío.
 - `usuario`, `usuario email`, `usuario nombre` y `google id token` se derivan del login de Google.
@@ -272,10 +290,13 @@ Reglas actuales de entrada:
 - Si el concepto es `Otros`, se habilita y exige `Otro concepto`.
 - Requiere monto.
 - Usa comprobante fijo `recibo`.
-- Usa razón social fija `Instituto`.
+- Usa razón social automática según el concepto:
+  - `Biblioteca` para `Inscripciones`, `Cooperadora libreta`, `Título` y `Kiosco`.
+  - `Secretaria` para `Constancia de trabajo`, `Certificación de servicios` y `Otros`.
 
 Reglas actuales de salida:
 
+- Requiere fecha.
 - Requiere comprobante.
 - Requiere razón social.
 - Requiere concepto/detalle.
@@ -289,19 +310,25 @@ Autenticación:
 
 - El login se realiza con Google Identity Services.
 - La sesión se guarda en `sessionStorage`, no en cookies ni backend propio.
-- Actualmente no hay restricción de dominio de correo en el frontend.
-- El token de Google se envía a la planilla, pero el Apps Script actual no valida criptográficamente el token.
+- El frontend restringe acceso con `ALLOWED_EMAILS` en `script.js`.
+- El Apps Script restringe escrituras con `allowedEmails` en `Apps Script.txt`.
+- Ambas listas deben mantenerse sincronizadas manualmente.
+- Los correos deben guardarse en minúsculas.
+- El Apps Script valida el `google id token` contra Google y confirma que `aud` coincida con `googleClientId`.
+- Si el token no es válido, el correo no está verificado o el correo no está permitido, `doPost(e)` responde `{ result: 'error', error: 'unauthorized' }` y no escribe la fila.
 
 Implicación de seguridad:
 
-- El login actual identifica al usuario para registro/auditoría básica.
-- No debe presentarse como control de seguridad fuerte hasta que el Apps Script valide el ID token o exista una capa backend con validación real.
+- El bloqueo de frontend mejora la experiencia de usuario, pero la protección relevante está en Apps Script.
+- Para autorizar o desautorizar usuarios, actualizar `ALLOWED_EMAILS` y `allowedEmails` con los mismos correos.
+- `GOOGLE_CLIENT_ID` y `googleClientId` deben seguir apuntando al mismo OAuth Client ID.
 
 ## Restricciones y Patrones a Evitar
 
 - No tocar `.git/`.
 - No agregar secretos, tokens privados, credenciales o claves de servicio al repo.
 - No tratar `GOOGLE_CLIENT_ID` como secreto: es un identificador público, pero no reemplazarlo sin confirmar configuración OAuth.
+- No dejar `ALLOWED_EMAILS` y `allowedEmails` desincronizados.
 - No reemplazar `scriptUrl` sin confirmar que el nuevo Web App esté publicado y accesible.
 - No cambiar `sheetName = '2026'` sin confirmar que existe esa hoja en la planilla.
 - No cambiar encabezados esperados de Google Sheets sin actualizar `buildSheetPayload()` y probar un envío real.
@@ -319,10 +346,12 @@ Implicación de seguridad:
   - `userEmail`
   - `logoutButton`
   - `movementType`
+  - `formContext`
   - `concepto`
   - `otroConcepto`
   - `otroConceptoField`
   - `comprobante`
+  - `fechaSalida`
   - `razonSocial`
   - `conceptoSalida`
   - `monto`
@@ -345,6 +374,7 @@ Checklist mínimo para cambios de frontend:
 - Login y logout funcionan.
 - Las tabs `Entrada` y `Salida` alternan campos y labels correctamente.
 - Los campos requeridos cambian según el tipo de movimiento.
+- En `Salida`, el campo `Fecha` es requerido y se envía como `fecha` en formato `dd/mm/aaaa`.
 - `Otros` muestra y exige el campo adicional.
 - El botón de submit se deshabilita durante el envío y luego recupera texto correcto.
 - SweetAlert2 muestra éxito o error según corresponda.
