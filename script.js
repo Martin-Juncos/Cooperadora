@@ -6,6 +6,7 @@ const scriptUrl =
 const ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
   "modo.beta.developer@gmail.com",
+  "josexeneise12@gmail.com",
 ]);
 
 const loginView = document.getElementById("loginView");
