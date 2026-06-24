@@ -276,6 +276,68 @@ h1 {
     color: #344071;
 }
 
+.static-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 4px 0 10px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.static-switch-label {
+    color: #8c91a1;
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 0 1px 0 #fff;
+    white-space: nowrap;
+}
+
+.static-switch {
+    flex: 0 0 auto;
+    position: relative;
+    width: 92px;
+    height: 46px;
+    border: 2px solid #eef0f5;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #c9ced8 0%, #b7beca 100%);
+    box-shadow:
+        inset 0 3px 7px rgba(17, 24, 39, 0.24),
+        0 3px 7px rgba(17, 24, 39, 0.18);
+}
+
+.static-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #ffffff 0%, #f4f4f6 100%);
+    box-shadow:
+        0 4px 8px rgba(17, 24, 39, 0.28),
+        inset 0 -1px 2px rgba(17, 24, 39, 0.1);
+    transition: transform 180ms ease;
+}
+
+.static-switch-row.is-transfer .static-switch-thumb {
+    transform: translateX(48px);
+}
+
+.static-switch-row.is-transfer .static-switch {
+    background: linear-gradient(180deg, #9fb2d4 0%, #7892bf 100%);
+}
+
+.static-switch-row:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
 .status-pill {
     display: inline-flex;
     align-items: center;
@@ -424,6 +486,7 @@ select:focus-visible {
     .movement-form > input,
     .form-heading,
     .form-context,
+    .static-switch-row,
     .entrada-field,
     .salida-field,
     .amount-field,
