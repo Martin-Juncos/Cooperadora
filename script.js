@@ -326,7 +326,7 @@ function getRazonSocialEntrada(conceptoEntrada) {
   return BIBLIOTECA_CONCEPTS.has(conceptoEntrada) ? "Biblioteca" : "Secretaria";
 }
 
-function buildSheetPayload() {
+function getMovementData() {
   const isEntrada = movementType.value === "Entrada";
   const conceptoFinal =
     isEntrada && concepto.value === "Otros"
@@ -341,20 +341,63 @@ function buildSheetPayload() {
     ? getTodayForSheet()
     : formatInputDateForSheet(fechaSalida.value);
 
+  return {
+    tipo: isEntrada ? "Entrada" : "Salida",
+    fecha: fechaFinal,
+    comprobante: isEntrada ? "recibo" : comprobante.value,
+    razonSocial: razonSocialFinal,
+    concepto: conceptoFinal,
+    entrada: isEntrada ? monto.value : "",
+    salida: isEntrada ? "" : monto.value,
+    medioPago: paymentType,
+    usuario: currentUser?.name || "",
+  };
+}
+
+function buildSheetPayload(movementData) {
   const payload = new FormData();
-  payload.append("fecha", fechaFinal);
-  payload.append("comprobante", isEntrada ? "recibo" : comprobante.value);
-  payload.append("razon social", razonSocialFinal);
-  payload.append("concepto", conceptoFinal);
-  payload.append("entrada", isEntrada ? monto.value : "");
-  payload.append("salida", isEntrada ? "" : monto.value);
-  payload.append("tipo de movimiento", paymentType);
-  payload.append("usuario", currentUser?.name || "");
+  payload.append("fecha", movementData.fecha);
+  payload.append("comprobante", movementData.comprobante);
+  payload.append("razon social", movementData.razonSocial);
+  payload.append("concepto", movementData.concepto);
+  payload.append("entrada", movementData.entrada);
+  payload.append("salida", movementData.salida);
+  payload.append("tipo de movimiento", movementData.medioPago);
+  payload.append("usuario", movementData.usuario);
   payload.append("usuario email", currentUser?.email || "");
   payload.append("usuario nombre", currentUser?.name || "");
   payload.append("google id token", currentUser?.token || "");
 
   return payload;
+}
+
+function formatMoneyForConfirmation(value) {
+  const amount = Number(value || 0);
+
+  return amount.toLocaleString("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 2,
+  });
+}
+
+function getConfirmationHtml(movementData) {
+  const amount = movementData.tipo === "Entrada"
+    ? movementData.entrada
+    : movementData.salida;
+
+  return `
+    <div class="confirm-summary">
+      <div><strong>Movimiento:</strong> ${movementData.tipo}</div>
+      <div><strong>Fecha:</strong> ${movementData.fecha}</div>
+      <div><strong>Medio de pago:</strong> ${movementData.medioPago}</div>
+      <div><strong>Comprobante:</strong> ${movementData.comprobante}</div>
+      <div><strong>Razón social:</strong> ${movementData.razonSocial}</div>
+      <div><strong>Concepto:</strong> ${movementData.concepto}</div>
+      <div><strong>Monto:</strong> ${formatMoneyForConfirmation(amount)}</div>
+      <div><strong>Usuario:</strong> ${movementData.usuario}</div>
+    </div>
+  `;
 }
 
 tabs.forEach((tab) => {
@@ -375,6 +418,19 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  const movementData = getMovementData();
+  const confirmation = await Swal.fire({
+    title: "Confirmar movimiento",
+    html: getConfirmationHtml(movementData),
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Confirmar y registrar",
+    cancelButtonText: "Revisar",
+    reverseButtons: true,
+  });
+
+  if (!confirmation.isConfirmed) return;
+
   submitButton.disabled = true;
   submitButton.setAttribute("aria-busy", "true");
   submitButton.textContent = "Enviando...";
@@ -383,7 +439,7 @@ form.addEventListener("submit", async (e) => {
     await fetch(scriptUrl, {
       method: "POST",
       mode: "no-cors",
-      body: buildSheetPayload(),
+      body: buildSheetPayload(movementData),
     });
 
     await Swal.fire({
