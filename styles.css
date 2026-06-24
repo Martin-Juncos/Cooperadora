@@ -254,11 +254,7 @@ h1 {
 
 .form-top {
     display: grid;
-<<<<<<< HEAD
     grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
-=======
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
->>>>>>> 3b6e5818a12a2f7e39859fd3d46cb8c26bd3e856
     gap: 18px;
     align-items: stretch;
     margin-bottom: 18px;
@@ -303,11 +299,7 @@ h1 {
     justify-items: center;
     gap: 10px;
     min-height: 116px;
-<<<<<<< HEAD
     padding: 16px 18px;
-=======
-    padding: 14px;
->>>>>>> 3b6e5818a12a2f7e39859fd3d46cb8c26bd3e856
     border: 1px solid #dbe3ed;
     border-radius: 10px;
     background: #f8fafc;
@@ -582,13 +574,10 @@ select:focus-visible {
     .payment-card {
         min-height: auto;
     }
-<<<<<<< HEAD
 
     .static-switch-row {
         min-width: 0;
     }
-=======
->>>>>>> 3b6e5818a12a2f7e39859fd3d46cb8c26bd3e856
 }
 
 @media (max-width: 420px) {
