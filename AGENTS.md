@@ -98,7 +98,7 @@ La raíz del proyecto contiene la app principal y una carpeta local para skills 
 - `manifest.webmanifest` define nombre, colores, iconos, `display: "standalone"` y rutas relativas para funcionar en GitHub Pages y local.
 - `sw.js` cachea la app shell y muestra `offline.html` cuando una navegación falla sin conexión.
 - `assets/brand/logo_isfd.jpg` es el logo institucional principal usado en la UI y en `offline.html`.
-- `icons/` contiene PNGs para instalación en Windows/Android y `apple-touch-icon.png` para iOS.
+- `icons/` contiene PNGs para instalación en Windows/Android y `apple-touch-icon....png` para iOS.
 - La app instalada puede abrirse como PWA, pero registrar movimientos requiere conexión a internet, Google Identity Services y Apps Script.
 
 ### `skills/`
