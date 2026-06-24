@@ -22,6 +22,7 @@ const form = document.forms["cooperadora-form"];
 const tabs = document.querySelectorAll(".tab");
 const movementType = document.getElementById("movementType");
 const formContext = document.getElementById("formContext");
+const paymentTypeSwitch = document.getElementById("paymentTypeSwitch");
 const concepto = document.getElementById("concepto");
 const otroConcepto = document.getElementById("otroConcepto");
 const otroConceptoField = document.getElementById("otroConceptoField");
@@ -41,6 +42,7 @@ const BIBLIOTECA_CONCEPTS = new Set([
 
 let currentUser = getStoredUser();
 let googleButtonRendered = false;
+let paymentType = "efectivo";
 
 function isGoogleClientConfigured() {
   return GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("PEGAR_CLIENT_ID");
@@ -197,9 +199,12 @@ function logout() {
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
-  navigator.serviceWorker.register("sw.js").catch((error) => {
-    console.warn("No se pudo registrar el service worker", error);
-  });
+  navigator.serviceWorker
+    .register("sw.js")
+    .then((registration) => registration.update())
+    .catch((error) => {
+      console.warn("No se pudo registrar el service worker", error);
+    });
 }
 
 function setRequired(fields, required) {
@@ -207,6 +212,21 @@ function setRequired(fields, required) {
     field.required = required;
     if (!required) field.value = "";
   });
+}
+
+function setPaymentType(nextPaymentType) {
+  paymentType = nextPaymentType;
+  const isTransfer = paymentType === "transferencia";
+  paymentTypeSwitch.classList.toggle("is-transfer", isTransfer);
+  paymentTypeSwitch.setAttribute("aria-pressed", String(isTransfer));
+  paymentTypeSwitch.setAttribute(
+    "aria-label",
+    `Tipo de movimiento: ${paymentType}`,
+  );
+}
+
+function togglePaymentType() {
+  setPaymentType(paymentType === "efectivo" ? "transferencia" : "efectivo");
 }
 
 function updateOtherConcept() {
@@ -328,6 +348,7 @@ function buildSheetPayload() {
   payload.append("concepto", conceptoFinal);
   payload.append("entrada", isEntrada ? monto.value : "");
   payload.append("salida", isEntrada ? "" : monto.value);
+  payload.append("tipo de movimiento", paymentType);
   payload.append("usuario", currentUser?.name || "");
   payload.append("usuario email", currentUser?.email || "");
   payload.append("usuario nombre", currentUser?.name || "");
@@ -341,6 +362,7 @@ tabs.forEach((tab) => {
 });
 
 concepto.addEventListener("change", updateOtherConcept);
+paymentTypeSwitch.addEventListener("click", togglePaymentType);
 logoutButton.addEventListener("click", logout);
 window.addEventListener("load", initGoogleSignIn);
 window.addEventListener("load", registerServiceWorker);
@@ -391,3 +413,4 @@ form.addEventListener("submit", async (e) => {
 });
 
 setActiveTab("entrada");
+setPaymentType("efectivo");
