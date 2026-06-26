@@ -9,6 +9,7 @@ const ALLOWED_EMAILS = new Set([
   "josexeneise12@gmail.com",
   "lela29q@gmail.com",
   "clauce80.cz@gmail.com",
+  "cfjuncos2001@gmail.com",
 ]);
 
 const loginView = document.getElementById("loginView");
@@ -382,9 +383,10 @@ function formatMoneyForConfirmation(value) {
 }
 
 function getConfirmationHtml(movementData) {
-  const amount = movementData.tipo === "Entrada"
-    ? movementData.entrada
-    : movementData.salida;
+  const amount =
+    movementData.tipo === "Entrada"
+      ? movementData.entrada
+      : movementData.salida;
 
   return `
     <div class="confirm-summary">
