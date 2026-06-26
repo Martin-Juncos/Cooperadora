@@ -1,8 +1,12 @@
 const sheetName = '2026'
 const googleClientId = '479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com'
 const allowedEmails = [
-  // Agregar aca los correos autorizados, siempre en minusculas.
-  // 'persona.autorizada@gmail.com',
+  "prof.mcjuncos@gmail.com",
+  "modo.beta.developer@gmail.com",
+  "josexeneise12@gmail.com",
+  "lela29q@gmail.com",
+  "clauce80.cz@gmail.com",
+  "cfjuncos2001@gmail.com"
 ]
 const scriptProp = PropertiesService.getScriptProperties()
 
