@@ -1,202 +1,157 @@
 # Cooperadora del ISFD "D. Lesteime"
 
-Aplicacion web simple para registrar movimientos de entrada y salida de dinero de la cooperadora.
+Aplicación web para registrar movimientos de entrada y salida de dinero de la cooperadora escolar. Funciona desde el navegador, no requiere instalación de software y está disponible como PWA instalable en cualquier dispositivo.
 
-URL publica:
+🔗 **[Abrir la aplicación](https://martin-juncos.github.io/Cooperadora/)**
 
-https://martin-juncos.github.io/Cooperadora/
+---
 
-## Que Hace
+## Qué hace
 
-- Permite iniciar sesion con una cuenta de Google.
-- Registra movimientos de `Entrada` y `Salida`.
-- Envia los datos a un Web App de Google Apps Script.
-- Guarda los movimientos en una hoja de Google Sheets llamada `2026`.
-- Restringe el acceso a usuarios autorizados por email.
+- Autenticación segura con cuenta de Google (solo usuarios autorizados por email).
+- Registro de movimientos de **Entrada** y **Salida** con validación de campos.
+- Envío de datos a una hoja de Google Sheets vía Google Apps Script.
+- Funciona offline una vez instalada (muestra pantalla de aviso sin conexión).
+- Instalable como app en Windows, Android e iOS sin pasar por ninguna tienda.
 
-## Estructura
+---
 
-```text
-.
-|-- index.html        # Interfaz principal: login, usuario y formulario.
-|-- styles.css        # Estilos responsive y sistema visual.
-|-- script.js         # Login, autorizacion, tabs, payload y envio.
-|-- manifest.webmanifest # Configuracion PWA instalable.
-|-- sw.js             # Service worker para instalacion y cache basico.
-|-- offline.html      # Pantalla cuando no hay conexion.
-|-- assets/brand/     # Logo institucional usado en la aplicacion.
-|-- icons/            # Iconos para Windows, Android e iOS.
-|-- Apps Script.txt   # Codigo para Google Apps Script.
-|-- AGENTS.md         # Contexto operativo para agentes.
-`-- skills/           # Skills locales del proyecto.
-```
+## Cómo usarla
 
-## Como Usarlo
+1. Abrir la URL pública desde cualquier navegador.
+2. Iniciar sesión con una cuenta de Google autorizada.
+3. Elegir la pestaña **Entrada** o **Salida**.
+4. Completar los campos del formulario.
+5. Confirmar y registrar el movimiento.
 
-1. Abrir la URL publica.
-2. Iniciar sesion con Google.
-3. Elegir `Entrada` o `Salida`.
-4. Completar los campos requeridos.
-5. Registrar el movimiento.
+Los datos quedan guardados automáticamente en la hoja `2026` de Google Sheets.
 
-## Instalar en Windows, Android e iOS
+---
 
-La app esta preparada como PWA. Eso permite instalarla desde navegadores compatibles sin pasar por una tienda de aplicaciones.
-
-### Windows
-
-En Microsoft Edge o Google Chrome:
-
-1. Abrir https://martin-juncos.github.io/Cooperadora/
-2. Buscar el icono de instalar en la barra de direcciones.
-3. Elegir `Instalar`.
-4. La app quedara disponible desde el menu Inicio.
-
-### Android
-
-En Google Chrome:
-
-1. Abrir https://martin-juncos.github.io/Cooperadora/
-2. Tocar el menu de tres puntos.
-3. Elegir `Instalar app` o `Agregar a pantalla principal`.
-4. Abrirla desde el icono de la pantalla principal.
-
-### iPhone o iPad
-
-En Safari:
-
-1. Abrir https://martin-juncos.github.io/Cooperadora/
-2. Tocar el boton de compartir.
-3. Elegir `Agregar a pantalla de inicio`.
-4. Confirmar el nombre `Cooperadora`.
-
-En iOS, la instalacion funciona desde Safari. Otros navegadores pueden no mostrar la opcion del mismo modo.
-
-## Reglas de Movimientos
+## Reglas de los movimientos
 
 ### Entradas
 
-Las entradas usan la fecha actual y se imputan automaticamente:
+Se registran con la fecha actual y se asocian a una sección:
 
-- `Biblioteca`: `Inscripciones`, `Cooperadora libreta`, `Título`, `Kiosco`.
-- `Secretaria`: `Constancia de trabajo`, `Certificación de servicios`, `Otros`.
+| Sección | Conceptos disponibles |
+|---|---|
+| Biblioteca | Inscripciones, Cooperadora libreta, Título, Kiosco |
+| Secretaría | Constancia de trabajo, Certificación de servicios, Otros |
 
-El campo `concepto` se guarda en minuscula en la planilla. Si se elige `Otros`, se guarda el texto escrito en `Otro concepto`.
+Si se elige **Otros**, se habilita un campo para escribir el concepto manualmente.
 
 ### Salidas
 
-Las salidas requieren:
+Requieren los siguientes campos obligatorios: comprobante, fecha, razón social, concepto y monto (mayor a $0). La fecha se envía en formato `dd/mm/aaaa` y puede ser distinta a la fecha actual.
 
-- comprobante
-- fecha
-- razon social
-- concepto
-- monto
+---
 
-La fecha de salida se envia en formato `dd/mm/aaaa` y puede ser distinta de la columna `Date`, que Apps Script completa automaticamente al momento de recibir el movimiento.
+## Instalar como app
 
-## Usuarios Autorizados
+### Windows (Chrome o Edge)
+1. Abrir la URL en Chrome o Edge.
+2. Hacer clic en el ícono de instalación en la barra de direcciones.
+3. Elegir **Instalar**.
 
-La autorizacion se mantiene en dos lugares y ambos deben tener los mismos correos:
+### Android (Chrome)
+1. Abrir la URL en Chrome.
+2. Tocar el menú de tres puntos.
+3. Elegir **Instalar app** o **Agregar a pantalla principal**.
 
-En `script.js`:
+### iPhone / iPad (Safari)
+1. Abrir la URL en Safari.
+2. Tocar el botón de compartir.
+3. Elegir **Agregar a pantalla de inicio**.
 
-```js
-const ALLOWED_EMAILS = new Set([
-  "persona1@gmail.com",
-  "persona2@gmail.com",
-]);
+> En iOS la instalación solo funciona correctamente desde Safari.
+
+---
+
+## Estructura del proyecto
+
+```
+.
+├── index.html              # Interfaz principal: login, header y formulario
+├── styles.css              # Sistema visual completo y responsive
+├── script.js               # Autenticación, sesión, UI, validación y envío
+├── manifest.webmanifest    # Configuración PWA
+├── sw.js                   # Service worker: cache e instalación offline
+├── offline.html            # Pantalla cuando no hay conexión
+├── apps-script.js          # Código para Google Apps Script (no se ejecuta localmente)
+├── assets/brand/           # Logo institucional
+└── icons/                  # Íconos para Windows, Android e iOS
 ```
 
-En `Apps Script.txt`:
+---
 
+## Configuración para adaptar el proyecto
+
+### 1. Google OAuth — Client ID
+
+En `script.js`:
+```js
+const GOOGLE_CLIENT_ID = "TU_CLIENT_ID.apps.googleusercontent.com";
+```
+
+El mismo valor debe estar en `apps-script.js`:
+```js
+const googleClientId = "TU_CLIENT_ID.apps.googleusercontent.com";
+```
+
+Para gestionar orígenes autorizados: [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+
+### 2. Usuarios autorizados
+
+La lista de emails vive en `apps-script.js` como única fuente de verdad:
 ```js
 const allowedEmails = [
   'persona1@gmail.com',
   'persona2@gmail.com',
-]
+];
 ```
 
-Los correos deben estar en minusculas.
+Los emails deben ir en minúsculas. El Apps Script valida el token de Google y rechaza cualquier usuario no autorizado antes de escribir en la hoja.
 
-El frontend bloquea el acceso visualmente, pero la proteccion importante esta en Apps Script: valida el `google id token`, confirma el `googleClientId`, verifica el email y rechaza usuarios no autorizados antes de escribir en la hoja.
-
-## Configuracion de Google
-
-### Google OAuth
-
-El Client ID se configura en `script.js`:
-
-```js
-const GOOGLE_CLIENT_ID = "...apps.googleusercontent.com";
-```
-
-Ese mismo Client ID debe coincidir con `googleClientId` en `Apps Script.txt`.
-
-Para administrar origenes autorizados:
-
-https://console.cloud.google.com/apis/credentials
-
-### Apps Script
-
-El archivo `Apps Script.txt` debe copiarse o sincronizarse manualmente en Google Apps Script.
-
-Antes de usarlo:
+### 3. Desplegar el Apps Script
 
 1. Abrir la planilla de Google Sheets.
-2. Pegar o actualizar el codigo en Apps Script.
-3. Ejecutar `initialSetup()` una vez.
-4. Publicar una nueva version del Web App.
-5. Confirmar que `scriptUrl` en `script.js` apunte a la URL publicada.
+2. Ir a **Extensiones → Apps Script**.
+3. Pegar el contenido de `apps-script.js`.
+4. Ejecutar `initialSetup()` una vez.
+5. Publicar una nueva versión del Web App.
+6. Copiar la URL publicada y pegarla en `script.js`:
+```js
+const SCRIPT_URL = "https://script.google.com/macros/s/TU_URL/exec";
+```
 
-## Desarrollo Local
+---
 
-No hay `package.json`, build step ni dependencias instalables.
+## Desarrollo local
 
-Para servir la app localmente:
+Sin dependencias ni build step:
 
-```powershell
+```bash
 py -m http.server 5500
 ```
 
-Luego abrir:
+Abrir `http://localhost:5500`. El login con Google requiere que el origen esté autorizado en Google Cloud Console.
 
-```text
-http://localhost:5500
-```
-
-Para verificar sintaxis de JavaScript:
-
-```powershell
+Para verificar sintaxis:
+```bash
 node --check script.js
 ```
 
-Para validar sintaxis del archivo de Apps Script desde PowerShell:
+---
 
-```powershell
-Get-Content -Raw "Apps Script.txt" | node --check --input-type=commonjs
-```
+## Notas
 
-## Notas Importantes
+- Registrar movimientos requiere conexión a internet aunque la app esté instalada.
+- No subir credenciales ni emails reales al repositorio.
+- Si se modifica `styles.css` o `script.js`, incrementar `CACHE_NAME` en `sw.js` para forzar actualización en dispositivos con la app instalada.
 
-- `fetch` usa `mode: "no-cors"`, por lo que el navegador no puede leer la respuesta real de Apps Script.
-- Mantener sincronizadas las listas de usuarios autorizados.
-- No cambiar nombres de campos enviados al `FormData` sin revisar encabezados de Google Sheets.
-- No subir secretos ni credenciales al repositorio.
-- `GOOGLE_CLIENT_ID` no es secreto, pero debe coincidir con la configuracion OAuth correcta.
-- La PWA puede abrir instalada en Windows, Android e iOS, pero registrar movimientos requiere conexion a internet.
-- Si cambian iconos, nombre o colores de marca, actualizar `manifest.webmanifest`, `icons/` y los metadatos de `index.html`.
-- El logo institucional principal vive en `assets/brand/logo_isfd.jpg` y se usa en la app y en la pantalla offline.
+---
 
-## Verificacion Recomendada
+*Hecho con mucho ☕ y ♥️ por el Profe Mercho*
 
-- Probar login con un usuario autorizado.
-- Probar login con un usuario no autorizado.
-- Registrar una entrada.
-- Registrar una salida con fecha distinta a la actual.
-- Confirmar que la hoja `2026` recibe `fecha`, `razon social`, `concepto`, `entrada`, `salida` y datos de usuario.
-- Revisar el formulario en celular.
-- Probar instalacion PWA en Chrome o Edge.
-- En iOS, probar `Agregar a pantalla de inicio` desde Safari.
-
-Hecho por el Profe Mercho con mucho ☕ y ♥️
+---
