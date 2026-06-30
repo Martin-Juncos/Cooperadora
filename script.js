@@ -15,6 +15,8 @@ const ALLOWED_EMAILS = new Set([
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
 const loginHelp = document.getElementById("loginHelp");
+const metricsCards = document.getElementById("metricsCards");
+const metricsStatus = document.getElementById("metricsStatus");
 const userPicture = document.getElementById("userPicture");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
@@ -105,6 +107,7 @@ function showApp(user) {
   userEmail.textContent = user.email || "";
   loginView.classList.add("hidden");
   appView.classList.remove("hidden");
+  loadMetrics();
 }
 
 function handleCredentialResponse(response) {
@@ -206,6 +209,101 @@ function registerServiceWorker() {
     .catch((error) => {
       console.warn("No se pudo registrar el service worker", error);
     });
+}
+
+function getScriptUrlWithParams(params) {
+  const url = new URL(scriptUrl);
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  return url.toString();
+}
+
+function requestJsonp(params) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `metricasCallback_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    const script = document.createElement("script");
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Tiempo de espera agotado al leer Metricas2026"));
+    }, 12000);
+
+    function cleanup() {
+      window.clearTimeout(timeout);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("No se pudo leer Metricas2026"));
+    };
+
+    script.src = getScriptUrlWithParams({
+      ...params,
+      callback: callbackName,
+      _: String(Date.now()),
+    });
+    document.body.appendChild(script);
+  });
+}
+
+function clearMetrics() {
+  if (metricsCards) metricsCards.replaceChildren();
+}
+
+function setMetricsStatus(message) {
+  if (metricsStatus) metricsStatus.textContent = message;
+}
+
+function renderMetrics(totals) {
+  if (!metricsCards) return;
+
+  metricsCards.replaceChildren();
+  totals.forEach((metric) => {
+    const card = document.createElement("article");
+    const label = document.createElement("strong");
+    const value = document.createElement("span");
+
+    card.className = "metric-card";
+    label.textContent = metric.label;
+    value.textContent = metric.displayValue || metric.value || "0";
+
+    card.append(label, value);
+    metricsCards.appendChild(card);
+  });
+}
+
+async function loadMetrics() {
+  if (!currentUser?.token || !metricsCards || !metricsStatus) return;
+
+  setMetricsStatus("Cargando datos de Metricas2026...");
+
+  try {
+    const response = await requestJsonp({
+      action: "metricas",
+      "google id token": currentUser.token,
+    });
+
+    if (response.result !== "success") {
+      throw new Error(response.error || "Respuesta inválida");
+    }
+
+    renderMetrics(response.metrics.totals || []);
+    setMetricsStatus("Actualizado desde Google Sheets");
+  } catch (error) {
+    console.warn(error);
+    clearMetrics();
+    setMetricsStatus("No se pudo cargar el resumen");
+  }
 }
 
 function setRequired(fields, required) {
@@ -454,6 +552,7 @@ form.addEventListener("submit", async (e) => {
 
     form.reset();
     setActiveTab("entrada");
+    window.setTimeout(loadMetrics, 800);
   } catch (error) {
     console.error("Error", error);
 

@@ -199,6 +199,65 @@ h1 {
     transform: translateY(1px);
 }
 
+.metrics-panel {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 4px 10px rgba(17, 24, 39, 0.05);
+}
+
+.metrics-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.metrics-status {
+    color: var(--muted);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.metrics-cards {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.metric-card {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #dbe3ed;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.metric-card strong,
+.metric-card span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.metric-card strong {
+    color: var(--primary-strong);
+    font-size: 1.15rem;
+    line-height: 1.2;
+}
+
+.metric-card span {
+    margin-top: 6px;
+    color: var(--text);
+    font-size: 1.65rem;
+    font-weight: 900;
+}
+
 .card {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -585,6 +644,18 @@ select:focus-visible {
         width: 100%;
     }
 
+    .metrics-heading {
+        display: grid;
+    }
+
+    .metrics-status {
+        text-align: left;
+    }
+
+    .metrics-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     h1 {
         font-size: 2.4rem;
     }
@@ -628,6 +699,10 @@ select:focus-visible {
     .logout-button {
         grid-column: 1 / -1;
         width: 100%;
+    }
+
+    .metrics-cards {
+        grid-template-columns: 1fr;
     }
 }
 

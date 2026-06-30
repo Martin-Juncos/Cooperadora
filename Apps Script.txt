@@ -1,4 +1,5 @@
 const sheetName = '2026'
+const metricsSheetName = 'Metricas2026'
 const googleClientId = '479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com'
 const allowedEmails = [
   "prof.mcjuncos@gmail.com",
@@ -27,6 +28,18 @@ function jsonResponse (payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON)
+}
+
+function isSafeCallbackName (callbackName) {
+  return /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(String(callbackName || ''))
+}
+
+function jsonpResponse (payload, callbackName) {
+  if (!isSafeCallbackName(callbackName)) return jsonResponse(payload)
+
+  return ContentService
+    .createTextOutput(callbackName + '(' + JSON.stringify(payload) + ')')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT)
 }
 
 function verifyGoogleToken (idToken) {
@@ -92,6 +105,68 @@ function applyBalanceFormulas (sheet, lastMovementRow) {
   }
 
   sheet.getRange(2, 10, formulas.length, 3).setFormulas(formulas)
+}
+
+function readMetrics (doc) {
+  const sheet = doc.getSheetByName(metricsSheetName)
+  if (!sheet) throw new Error('No existe la hoja ' + metricsSheetName)
+
+  const totalLabels = sheet.getRange(1, 1, 1, 5).getDisplayValues()[0]
+  const totalValues = sheet.getRange(2, 1, 1, 5).getDisplayValues()[0]
+  const monthlyHeaders = sheet.getRange(4, 1, 1, 6).getDisplayValues()[0]
+  const monthlyRows = sheet.getRange(5, 1, 12, 6).getDisplayValues()
+
+  return {
+    totals: totalLabels
+      .map(function (label, index) {
+        return {
+          label: label,
+          displayValue: totalValues[index]
+        }
+      })
+      .filter(function (metric) {
+        return metric.label !== ''
+      }),
+    monthly: monthlyRows
+      .filter(function (row) {
+        return row[0] !== ''
+      })
+      .map(function (row) {
+        const item = {}
+        monthlyHeaders.forEach(function (header, index) {
+          if (header !== '') item[header] = row[index]
+        })
+        return item
+      })
+  }
+}
+
+function doGet (e) {
+  const params = e.parameter || {}
+  const callbackName = params.callback
+
+  try {
+    if (params.action !== 'metricas') {
+      return jsonpResponse({ result: 'error', error: 'invalid_action' }, callbackName)
+    }
+
+    const verifiedEmail = verifyGoogleToken(params['google id token'])
+
+    if (!verifiedEmail) {
+      return jsonpResponse({ result: 'error', error: 'unauthorized' }, callbackName)
+    }
+
+    const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'))
+    const metrics = readMetrics(doc)
+
+    return jsonpResponse({
+      result: 'success',
+      usuario: verifiedEmail,
+      metrics: metrics
+    }, callbackName)
+  } catch (error) {
+    return jsonpResponse({ result: 'error', error: error.toString() }, callbackName)
+  }
 }
 
 function doPost (e) {
