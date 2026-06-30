@@ -11,10 +11,16 @@ const ALLOWED_EMAILS = new Set([
   "clauce80.cz@gmail.com",
   "cfjuncos2001@gmail.com",
 ]);
+const SUMMARY_ALLOWED_EMAILS = new Set([
+  "prof.mcjuncos@gmail.com",
+  "josexeneise12@gmail.com",
+  "lela29q@gmail.com",
+]);
 
 const loginView = document.getElementById("loginView");
 const appView = document.getElementById("appView");
 const loginHelp = document.getElementById("loginHelp");
+const metricsPanel = document.getElementById("metricsPanel");
 const metricsCards = document.getElementById("metricsCards");
 const metricsStatus = document.getElementById("metricsStatus");
 const userPicture = document.getElementById("userPicture");
@@ -22,7 +28,9 @@ const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
 const logoutButton = document.getElementById("logoutButton");
 const form = document.forms["cooperadora-form"];
+const tabsNav = document.querySelector(".tabs");
 const tabs = document.querySelectorAll(".tab");
+const summaryTab = document.querySelector(".summary-tab");
 const movementType = document.getElementById("movementType");
 const formContext = document.getElementById("formContext");
 const paymentTypeSwitch = document.getElementById("paymentTypeSwitch");
@@ -61,6 +69,10 @@ function isUserAllowed(email) {
   return ALLOWED_EMAILS.has(normalizeEmail(email));
 }
 
+function canViewSummary(email) {
+  return SUMMARY_ALLOWED_EMAILS.has(normalizeEmail(email));
+}
+
 function decodeJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -96,6 +108,7 @@ function clearUser() {
 function showLogin() {
   loginView.classList.remove("hidden");
   appView.classList.add("hidden");
+  clearMetrics();
 }
 
 function showApp(user) {
@@ -105,9 +118,9 @@ function showApp(user) {
     : "Foto de perfil";
   userName.textContent = user.name || "Usuario";
   userEmail.textContent = user.email || "";
+  configureSummaryAccess(user);
   loginView.classList.add("hidden");
   appView.classList.remove("hidden");
-  loadMetrics();
 }
 
 function handleCredentialResponse(response) {
@@ -200,6 +213,20 @@ function logout() {
   showLogin();
 }
 
+function configureSummaryAccess(user) {
+  const summaryAllowed = canViewSummary(user?.email);
+  summaryTab.classList.toggle("hidden", !summaryAllowed);
+  tabsNav.classList.toggle("has-summary", summaryAllowed);
+
+  if (!summaryAllowed) {
+    metricsPanel.classList.add("hidden");
+    clearMetrics();
+    if (document.querySelector(".tab.active")?.dataset.tab === "resumen") {
+      setActiveTab("entrada");
+    }
+  }
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
@@ -283,7 +310,14 @@ function renderMetrics(totals) {
 }
 
 async function loadMetrics() {
-  if (!currentUser?.token || !metricsCards || !metricsStatus) return;
+  if (
+    !currentUser?.token ||
+    !canViewSummary(currentUser.email) ||
+    !metricsCards ||
+    !metricsStatus
+  ) {
+    return;
+  }
 
   setMetricsStatus("Cargando datos de Metricas2026...");
 
@@ -366,10 +400,16 @@ function updateFormContext() {
 }
 
 function setActiveTab(tabName) {
-  const isEntrada = tabName === "entrada";
+  const safeTabName =
+    tabName === "resumen" && !canViewSummary(currentUser?.email)
+      ? "entrada"
+      : tabName;
+  const isEntrada = safeTabName === "entrada";
+  const isSalida = safeTabName === "salida";
+  const isResumen = safeTabName === "resumen";
 
   tabs.forEach((tab) => {
-    const active = tab.dataset.tab === tabName;
+    const active = tab.dataset.tab === safeTabName;
     tab.classList.toggle("active", active);
     tab.setAttribute("aria-selected", String(active));
   });
@@ -379,26 +419,34 @@ function setActiveTab(tabName) {
   });
 
   document.querySelectorAll(".salida-field, .salida-copy").forEach((item) => {
-    item.classList.toggle("hidden", isEntrada);
+    item.classList.toggle("hidden", !isSalida);
   });
+
+  form.classList.toggle("hidden", isResumen);
+  metricsPanel.classList.toggle("hidden", !isResumen);
+
+  if (isResumen) {
+    loadMetrics();
+    return;
+  }
 
   movementType.value = isEntrada ? "Entrada" : "Salida";
   form.classList.toggle("is-entrada", isEntrada);
-  form.classList.toggle("is-salida", !isEntrada);
+  form.classList.toggle("is-salida", isSalida);
   submitButton.textContent = isEntrada
     ? "Registrar entrada"
     : "Registrar salida";
   submitButton.classList.toggle("income-submit", isEntrada);
-  submitButton.classList.toggle("expense-submit", !isEntrada);
+  submitButton.classList.toggle("expense-submit", isSalida);
 
-  if (!isEntrada && !fechaSalida.value) {
+  if (isSalida && !fechaSalida.value) {
     fechaSalida.value = getTodayForInput();
   }
 
   setRequired([concepto], isEntrada);
   setRequired(
     [comprobante, fechaSalida, razonSocial, conceptoSalida],
-    !isEntrada,
+    isSalida,
   );
   updateOtherConcept();
   updateFormContext();

@@ -9,6 +9,11 @@ const allowedEmails = [
   "clauce80.cz@gmail.com",
   "cfjuncos2001@gmail.com"
 ]
+const summaryAllowedEmails = [
+  "prof.mcjuncos@gmail.com",
+  "josexeneise12@gmail.com",
+  "lela29q@gmail.com"
+]
 const scriptProp = PropertiesService.getScriptProperties()
 
 function initialSetup () {
@@ -22,6 +27,10 @@ function normalizeEmail (email) {
 
 function isAllowedEmail (email) {
   return allowedEmails.indexOf(normalizeEmail(email)) !== -1
+}
+
+function isSummaryAllowedEmail (email) {
+  return summaryAllowedEmails.indexOf(normalizeEmail(email)) !== -1
 }
 
 function jsonResponse (payload) {
@@ -152,7 +161,7 @@ function doGet (e) {
 
     const verifiedEmail = verifyGoogleToken(params['google id token'])
 
-    if (!verifiedEmail) {
+    if (!verifiedEmail || !isSummaryAllowedEmail(verifiedEmail)) {
       return jsonpResponse({ result: 'error', error: 'unauthorized' }, callbackName)
     }
 

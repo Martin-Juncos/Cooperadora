@@ -200,7 +200,7 @@ h1 {
 }
 
 .metrics-panel {
-    margin-bottom: 12px;
+    margin-top: 14px;
     padding: 14px;
     border: 1px solid var(--line);
     border-radius: 10px;
@@ -333,6 +333,10 @@ h1 {
 .form-heading {
     display: grid;
     gap: 4px;
+}
+
+.tabs.has-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .form-heading h2 {
@@ -573,7 +577,7 @@ select:focus-visible {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .confirm-summary {
