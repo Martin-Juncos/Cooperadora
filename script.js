@@ -285,6 +285,8 @@ function setActiveTab(tabName) {
   });
 
   movementType.value = isEntrada ? "Entrada" : "Salida";
+  form.classList.toggle("is-entrada", isEntrada);
+  form.classList.toggle("is-salida", !isEntrada);
   submitButton.textContent = isEntrada
     ? "Registrar entrada"
     : "Registrar salida";
