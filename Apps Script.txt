@@ -54,6 +54,46 @@ function verifyGoogleToken (idToken) {
   }
 }
 
+function getNextMovementRow (sheet) {
+  const lastPhysicalRow = Math.max(sheet.getLastRow(), 2)
+  const values = sheet.getRange(2, 1, lastPhysicalRow - 1, 9).getValues()
+
+  for (let index = 0; index < values.length; index++) {
+    const rowHasMovementData = values[index].some(function (cell) {
+      return cell !== '' && cell !== null
+    })
+
+    if (!rowHasMovementData) return index + 2
+  }
+
+  return lastPhysicalRow + 1
+}
+
+function applyBalanceFormulas (sheet, lastMovementRow) {
+  if (lastMovementRow < 2) return
+
+  const formulas = []
+
+  for (let row = 2; row <= lastMovementRow; row++) {
+    if (row === 2) {
+      formulas.push([
+        '=IF(D2="efectivo", N(H2) - N(I2), 0)',
+        '=IF(D2="transferencia", N(H2) - N(I2), 0)',
+        '=N(H2) - N(I2)'
+      ])
+    } else {
+      const previousRow = row - 1
+      formulas.push([
+        '=IF(D' + row + '="efectivo", J' + previousRow + ' + N(H' + row + ') - N(I' + row + '), J' + previousRow + ')',
+        '=IF(D' + row + '="transferencia", K' + previousRow + ' + N(H' + row + ') - N(I' + row + '), K' + previousRow + ')',
+        '=L' + previousRow + ' + N(H' + row + ') - N(I' + row + ')'
+      ])
+    }
+  }
+
+  sheet.getRange(2, 10, formulas.length, 3).setFormulas(formulas)
+}
+
 function doPost (e) {
   const lock = LockService.getScriptLock()
   lock.tryLock(10000)
@@ -70,7 +110,7 @@ function doPost (e) {
     const sheet = doc.getSheetByName(sheetName)
 
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
-    const nextRow = sheet.getLastRow() + 1
+    const nextRow = getNextMovementRow(sheet)
 
     const newRow = headers.map(function (rawHeader) {
       const header = String(rawHeader).trim()
@@ -87,6 +127,7 @@ function doPost (e) {
     })
 
     sheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow])
+    applyBalanceFormulas(sheet, nextRow)
 
     return jsonResponse({ result: 'success', row: nextRow })
   } catch (error) {
