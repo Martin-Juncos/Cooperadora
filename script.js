@@ -23,6 +23,7 @@ const loginHelp = document.getElementById("loginHelp");
 const metricsPanel = document.getElementById("metricsPanel");
 const metricsCards = document.getElementById("metricsCards");
 const metricsStatus = document.getElementById("metricsStatus");
+const confirmSummaryButton = document.getElementById("confirmSummaryButton");
 const userPicture = document.getElementById("userPicture");
 const userName = document.getElementById("userName");
 const userEmail = document.getElementById("userEmail");
@@ -309,6 +310,53 @@ function renderMetrics(totals) {
   });
 }
 
+async function confirmSummary() {
+  if (!currentUser?.token || !canViewSummary(currentUser.email)) return;
+
+  const confirmation = await Swal.fire({
+    title: "Confirmar resumen",
+    text: "¿El resumen financiero es correcto hasta el momento?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Ok",
+    cancelButtonText: "No",
+    reverseButtons: true,
+  });
+
+  if (!confirmation.isConfirmed) return;
+
+  confirmSummaryButton.disabled = true;
+  confirmSummaryButton.setAttribute("aria-busy", "true");
+
+  try {
+    const response = await requestJsonp({
+      action: "confirmarResumen",
+      "google id token": currentUser.token,
+    });
+
+    if (response.result !== "success") {
+      throw new Error(response.error || "No se pudo confirmar");
+    }
+
+    await Swal.fire({
+      title: "Resumen confirmado",
+      text: `Se guardó la fecha y hora: ${response.confirmedAt}`,
+      icon: "success",
+    });
+    loadMetrics();
+  } catch (error) {
+    console.warn(error);
+    Swal.fire({
+      title: "No se pudo confirmar",
+      text: "Revisá la publicación de Apps Script e intentá nuevamente.",
+      icon: "error",
+    });
+  } finally {
+    confirmSummaryButton.disabled = false;
+    confirmSummaryButton.removeAttribute("aria-busy");
+  }
+}
+
 async function loadMetrics() {
   if (
     !currentUser?.token ||
@@ -556,6 +604,7 @@ tabs.forEach((tab) => {
 
 concepto.addEventListener("change", updateOtherConcept);
 paymentTypeSwitch.addEventListener("click", togglePaymentType);
+confirmSummaryButton.addEventListener("click", confirmSummary);
 logoutButton.addEventListener("click", logout);
 window.addEventListener("load", initGoogleSignIn);
 window.addEventListener("load", registerServiceWorker);

@@ -150,12 +150,26 @@ function readMetrics (doc) {
   }
 }
 
+function confirmMetrics (doc, email) {
+  const sheet = doc.getSheetByName(metricsSheetName)
+  if (!sheet) throw new Error('No existe la hoja ' + metricsSheetName)
+
+  const confirmedAt = new Date()
+  const target = sheet.getRange('D2')
+  target.setValue(confirmedAt)
+  target.setNumberFormat('dd/MM/yyyy HH:mm:ss')
+  target.setNote('Confirmado por ' + email)
+
+  return target.getDisplayValue()
+}
+
 function doGet (e) {
   const params = e.parameter || {}
   const callbackName = params.callback
+  const action = params.action
 
   try {
-    if (params.action !== 'metricas') {
+    if (action !== 'metricas' && action !== 'confirmarResumen') {
       return jsonpResponse({ result: 'error', error: 'invalid_action' }, callbackName)
     }
 
@@ -166,6 +180,17 @@ function doGet (e) {
     }
 
     const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'))
+
+    if (action === 'confirmarResumen') {
+      const confirmedAt = confirmMetrics(doc, verifiedEmail)
+
+      return jsonpResponse({
+        result: 'success',
+        usuario: verifiedEmail,
+        confirmedAt: confirmedAt
+      }, callbackName)
+    }
+
     const metrics = readMetrics(doc)
 
     return jsonpResponse({
