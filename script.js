@@ -4,7 +4,6 @@ const SESSION_KEY = "cooperadora.googleUser";
 const scriptUrl =
   "https://script.google.com/macros/s/AKfycbzLTUu2VsD05qlY2Z7Q5RadVFy-39gPcYHfpyx_VComc2bWjWYPGFqsu1bY4d9OYAo0/exec";
 
-// https://script.google.com/macros/s/AKfycbzr0UogUVkwit_qaWkP3LntiyBMHkUTvKm_0LhFS1tMnlgjrnZhUsi4e_tVy6wCbxU/exec
 const ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
   "modo.beta.developer@gmail.com",
