@@ -6,12 +6,10 @@ const scriptUrl =
 
 const ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
-  "modo.beta.developer@gmail.com",
   "josexeneise12@gmail.com",
   "lela29q@gmail.com",
-  "clauce80.cz@gmail.com",
-  "cfjuncos2001@gmail.com",
   "secretaria.isfd.lesteime@gmail.com",
+  "cascoekarina@gmail.com",
 ]);
 const SUMMARY_ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
