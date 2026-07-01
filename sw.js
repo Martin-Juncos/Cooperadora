@@ -1,4 +1,4 @@
-const CACHE_NAME = "cooperadora-v14";
+const CACHE_NAME = "cooperadora-v15";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -52,6 +52,26 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (requestUrl.origin !== self.location.origin) return;
+
+  if (
+    request.destination === "script" ||
+    request.destination === "style" ||
+    request.url.endsWith("/index.html")
+  ) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+
+          return networkResponse;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
