@@ -1,5 +1,6 @@
 const sheetName = '2026'
 const metricsSheetName = 'Metricas2026'
+const backupFolderName = 'cooperadora_backups'
 const googleClientId = '479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com'
 const allowedEmails = [
   "prof.mcjuncos@gmail.com",
@@ -38,6 +39,53 @@ function getSpreadsheet () {
   }
 
   throw new Error('No se pudo determinar la planilla de destino')
+}
+
+function getOrCreateBackupFolder () {
+  const folders = DriveApp.getFoldersByName(backupFolderName)
+  if (folders.hasNext()) return folders.next()
+
+  return DriveApp.createFolder(backupFolderName)
+}
+
+function getBackupFileName (date) {
+  const timestamp = Utilities.formatDate(
+    date,
+    Session.getScriptTimeZone(),
+    'yyyy-MM-dd_HH-mm'
+  )
+
+  return 'cooperadora_' + timestamp
+}
+
+function createSpreadsheetBackup () {
+  const spreadsheet = getSpreadsheet()
+  const sourceFile = DriveApp.getFileById(spreadsheet.getId())
+  const backupFolder = getOrCreateBackupFolder()
+  const backupDate = new Date()
+  const backupName = getBackupFileName(backupDate)
+  const backupFile = sourceFile.makeCopy(backupName, backupFolder)
+
+  scriptProp.setProperty('lastBackupAt', backupDate.toISOString())
+  scriptProp.setProperty('lastBackupFileId', backupFile.getId())
+
+  return backupFile.getUrl()
+}
+
+function installWeeklyBackupTrigger () {
+  ScriptApp.getProjectTriggers().forEach(function (trigger) {
+    if (trigger.getHandlerFunction() === 'createSpreadsheetBackup') {
+      ScriptApp.deleteTrigger(trigger)
+    }
+  })
+
+  ScriptApp
+    .newTrigger('createSpreadsheetBackup')
+    .timeBased()
+    .onWeekDay(ScriptApp.WeekDay.SATURDAY)
+    .atHour(0)
+    .everyWeeks(1)
+    .create()
 }
 
 function normalizeEmail (email) {

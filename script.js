@@ -2,7 +2,7 @@ const GOOGLE_CLIENT_ID =
   "479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com";
 const SESSION_KEY = "cooperadora.googleUser";
 const scriptUrl =
-  "https://script.google.com/macros/s/AKfycbzLTUu2VsD05qlY2Z7Q5RadVFy-39gPcYHfpyx_VComc2bWjWYPGFqsu1bY4d9OYAo0/exec";
+  "https://script.google.com/macros/s/AKfycbzr0UogUVkwit_qaWkP3LntiyBMHkUTvKm_0LhFS1tMnlgjrnZhUsi4e_tVy6wCbxU/exec";
 
 const ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
