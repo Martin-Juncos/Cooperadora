@@ -21,6 +21,25 @@ function initialSetup () {
   scriptProp.setProperty('key', activeSpreadsheet.getId())
 }
 
+function getSpreadsheet () {
+  const activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+  const activeSpreadsheetId = activeSpreadsheet ? activeSpreadsheet.getId() : ''
+  const savedSpreadsheetId = scriptProp.getProperty('key')
+
+  if (activeSpreadsheetId && activeSpreadsheetId !== savedSpreadsheetId) {
+    scriptProp.setProperty('key', activeSpreadsheetId)
+    return activeSpreadsheet
+  }
+
+  if (savedSpreadsheetId) return SpreadsheetApp.openById(savedSpreadsheetId)
+  if (activeSpreadsheet) {
+    scriptProp.setProperty('key', activeSpreadsheetId)
+    return activeSpreadsheet
+  }
+
+  throw new Error('No se pudo determinar la planilla de destino')
+}
+
 function normalizeEmail (email) {
   return String(email || '').trim().toLowerCase()
 }
@@ -179,7 +198,7 @@ function doGet (e) {
       return jsonpResponse({ result: 'error', error: 'unauthorized' }, callbackName)
     }
 
-    const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'))
+    const doc = getSpreadsheet()
 
     if (action === 'confirmarResumen') {
       const confirmedAt = confirmMetrics(doc, verifiedEmail)
@@ -215,7 +234,7 @@ function doPost (e) {
       return jsonResponse({ result: 'error', error: 'unauthorized' })
     }
 
-    const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'))
+    const doc = getSpreadsheet()
     const sheet = doc.getSheetByName(sheetName)
 
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]

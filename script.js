@@ -2,7 +2,9 @@ const GOOGLE_CLIENT_ID =
   "479787254850-3pect6imgqpi8c8opmjlhj90o6es97pe.apps.googleusercontent.com";
 const SESSION_KEY = "cooperadora.googleUser";
 const scriptUrl =
-  "https://script.google.com/macros/s/AKfycbw7074u4ndayDA1X_uPIBMAneuBTXsnDJI_LCORP_jpb48LcWSCjgzgcjD_5hrWWXOS/exec";
+  "https://script.google.com/macros/s/AKfycbzLTUu2VsD05qlY2Z7Q5RadVFy-39gPcYHfpyx_VComc2bWjWYPGFqsu1bY4d9OYAo0/exec";
+
+// https://script.google.com/macros/s/AKfycbzr0UogUVkwit_qaWkP3LntiyBMHkUTvKm_0LhFS1tMnlgjrnZhUsi4e_tVy6wCbxU/exec
 const ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",
   "modo.beta.developer@gmail.com",
@@ -10,6 +12,7 @@ const ALLOWED_EMAILS = new Set([
   "lela29q@gmail.com",
   "clauce80.cz@gmail.com",
   "cfjuncos2001@gmail.com",
+  "secretaria.isfd.lesteime@gmail.com",
 ]);
 const SUMMARY_ALLOWED_EMAILS = new Set([
   "prof.mcjuncos@gmail.com",

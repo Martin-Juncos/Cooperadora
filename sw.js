@@ -1,4 +1,4 @@
-const CACHE_NAME = "cooperadora-v11";
+const CACHE_NAME = "cooperadora-v14";
 const APP_SHELL = [
   "./",
   "index.html",
